@@ -3,35 +3,74 @@ using UnityEngine;
 
 public class S_Player : MonoBehaviour
 {
-    private Rigidbody2D m_rigidBody;
+    public static S_Player instance;
 
-    public int m_MaxNbShoot = 1000;
-    public int m_NbShoot;
-    public bool m_IsGrounded = true;
+    public GameObject m_groundCheck;
+
+    public Rigidbody2D m_rigidBody;
+    private Animator m_animator;
+
+    [SerializeField]
+    private GameObject m_oxygenBar;
+
+    [SerializeField]
+    private GameObject m_bulletPrefab;
+
+    [SerializeField]
+    private Transform m_bulletSpawner;
+
+    [SerializeField]
+    private Transform m_bulletHolderTransform;
 
     [SerializeField]
     private float m_jumpPower;
+    public bool m_IsGrounded = true;
 
     [SerializeField]
     private float m_speed = 1f;
-
-    private bool m_isShooting;
+    private bool m_isMoving;
+    private float m_moveDir = 0;
 
     [SerializeField]
     private float m_maxShootCooldown = 0.15f;
     private float m_shootCooldown;
+    private bool m_isShooting;
+    public int m_MaxNbShoot = 10;
+    public int m_NbShoot;
+
+    public float m_oxygen = 100f;
 
     private void Awake()
     {
+        if (instance == null)
+        {
+            instance = this;
+        }
         m_rigidBody = GetComponent<Rigidbody2D>();
+        m_animator = GetComponent<Animator>();
         m_NbShoot = m_MaxNbShoot;
         m_shootCooldown = m_maxShootCooldown;
     }
 
     private void Update()
     {
+        Move();
         Shoot();
+        Drowning();
     }
+
+    private void Move()
+    {
+        if (m_isMoving)
+        {
+            m_rigidBody.velocity = new Vector2(m_moveDir * m_speed, m_rigidBody.velocity.y);
+        }
+        else
+        {
+            m_rigidBody.velocity = new Vector2(0, m_rigidBody.velocity.y);
+        }
+    }
+
 
     private void Shoot()
     {
@@ -45,6 +84,8 @@ public class S_Player : MonoBehaviour
                 }
                 m_rigidBody.velocity += Vector2.up * 0.25f;
                 m_NbShoot--;
+                GameObject bullet = Instantiate(m_bulletPrefab, m_bulletSpawner.position, m_bulletSpawner.rotation, m_bulletHolderTransform);
+                bullet.GetComponent<Rigidbody2D>().velocity = Vector2.down * 10;
                 m_shootCooldown = 0.25f;
             }
         }
@@ -59,6 +100,19 @@ public class S_Player : MonoBehaviour
         
     }
 
+    public void Drowning()
+    {
+        float value = 5 * Time.deltaTime;
+        m_oxygen -= value;
+        if (m_oxygen <= 0)
+        {
+            Destroy(gameObject);
+        }
+        RectTransform rt = m_oxygenBar.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(rt.rect.width, m_oxygen*5);
+        m_oxygenBar.transform.localPosition = new Vector2( 760, (m_oxygen - 100) * 2.5f);
+    }
+
     public void JumpOrShoot(InputAction.CallbackContext context)
     {
         if (context.started)
@@ -66,6 +120,7 @@ public class S_Player : MonoBehaviour
             if (m_IsGrounded)
             {
                 m_rigidBody.velocity = new Vector2(m_rigidBody.velocity.x, m_jumpPower);
+                m_animator.SetBool("IsJumping", true);
                 m_IsGrounded = false;
                 m_isShooting = false;
             }
@@ -85,8 +140,29 @@ public class S_Player : MonoBehaviour
         }
     }
 
-    public void Move(InputAction.CallbackContext context)
+    public void MoveAction(InputAction.CallbackContext context)
     {
-        m_rigidBody.velocity = new Vector2(context.ReadValue<float>() * m_speed, m_rigidBody.velocity.y);
+        if (context.started)
+        {
+            float value = context.ReadValue<float>();
+            if (value < 0)
+            {
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            else if (value > 0)
+            {
+                transform.rotation = Quaternion.Euler(0, 180, 0);
+            }
+
+            m_moveDir = value;
+            m_animator.SetBool("IsMoving", true);
+            m_isMoving = true;
+        }
+        if (context.canceled)
+        {
+            m_moveDir = 0;
+            m_animator.SetBool("IsMoving", false);
+            m_isMoving = false;
+        }
     }
 }
