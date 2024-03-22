@@ -51,6 +51,13 @@ public class S_Player : MonoBehaviour
         m_NbShoot = m_MaxNbShoot;
         m_shootCooldown = m_maxShootCooldown;
     }
+    private void FixedUpdate()
+    {
+        if (m_rigidBody.velocity.y <= -20f)
+        {
+            m_rigidBody.velocity = new Vector2(m_rigidBody.velocity.x, -20f);
+        }
+    }
 
     private void Update()
     {
@@ -78,7 +85,7 @@ public class S_Player : MonoBehaviour
         {
             if (m_isShooting && m_NbShoot > 0)
             {
-                if (m_rigidBody.velocity.y <= -0.5f)
+                if (m_rigidBody.velocity.y < -0.5f)
                 {
                     m_rigidBody.velocity = new Vector2(m_rigidBody.velocity.x, -0.5f);
                 }
