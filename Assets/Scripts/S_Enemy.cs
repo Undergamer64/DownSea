@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 public class S_Enemy : MonoBehaviour
@@ -9,6 +10,8 @@ public class S_Enemy : MonoBehaviour
     private Collider2D m_groundCheckCollider;
     public bool IsBouncable = true;
     private int m_hp = 3;
+
+    private TextMeshProUGUI m_scoreText;
 
     [SerializeField]
     private float m_maxCoolDownMove = 1.5f;
@@ -28,6 +31,7 @@ public class S_Enemy : MonoBehaviour
         m_playerCollider = S_Player.instance.GetComponent<Collider2D>();
         m_groundCheckCollider = S_Player.instance.m_groundCheck.GetComponent<Collider2D>();
         m_coolDownMove = m_maxCoolDownMove;
+        m_scoreText = S_Player.instance.m_scoreText;
     }
 
     private void Update()
@@ -67,16 +71,46 @@ public class S_Enemy : MonoBehaviour
         {
             m_playerRigidbody.velocity = new Vector2(m_playerRigidbody.velocity.x, 10f);
             S_Player.instance.m_NbShoot = S_Player.instance.m_MaxNbShoot;
+            float value = m_playerCollider.GetComponent<S_Player>().m_oxygen;
+            value += 20;
+            if (value > 100)
+            {
+                m_playerCollider.GetComponent<S_Player>().m_oxygen = 100;
+            }
+            else
+            {
+                m_playerCollider.GetComponent<S_Player>().m_oxygen = value;
+            }
+            S_Player.instance.m_score += 100;
+            m_scoreText.text = "Score : " + S_Player.instance.m_score.ToString();
             Destroy(gameObject);
         }
         else if (collision == m_playerCollider)
         {
             S_Player.instance.m_oxygen -= 20;
             S_Player.instance.transform.position += Vector3.left * (1 * Mathf.Sign(transform.position.x - S_Player.instance.transform.position.x));
+            S_Player.instance.AmmoUpdate();
         }
         else if (collision.CompareTag("Bullet"))
         {
+            Destroy(collision.gameObject);
             m_hp -= 1;
+            if (m_hp <= 0)
+            {
+                float value = m_playerCollider.GetComponent<S_Player>().m_oxygen;
+                value += 20;
+                if (value > 100)
+                {
+                    m_playerCollider.GetComponent<S_Player>().m_oxygen = 100;
+                }
+                else
+                {
+                    m_playerCollider.GetComponent<S_Player>().m_oxygen = value;
+                }
+                S_Player.instance.m_score += 100;
+                m_scoreText.text = "Score : " + S_Player.instance.m_score.ToString();
+                Destroy(gameObject);
+            }
         }
     }
 }

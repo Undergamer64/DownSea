@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class S_GroundCheck : MonoBehaviour
@@ -18,6 +20,7 @@ public class S_GroundCheck : MonoBehaviour
             m_playerAnimator.SetBool("IsJumping", false);
             m_player.m_IsGrounded = true;
             m_player.m_NbShoot = m_player.m_MaxNbShoot;
+            S_Player.instance.AmmoUpdate();
         }
     }
 

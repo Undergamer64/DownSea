@@ -14,6 +14,9 @@ public class S_MapManager : MonoBehaviour
     private GameObject m_wall;
 
     [SerializeField]
+    private Sprite m_algea;
+
+    [SerializeField]
     private List<GameObject> m_enemyPrefab;
 
     private void Start()
@@ -55,15 +58,7 @@ public class S_MapManager : MonoBehaviour
 
                 if (blockExist == null)
                 {
-                    float spawnProbSub = 0;
-                    float screenPercent = 0.3f;
-                    float lessBlockMidPercent = 0.15f;
-
-                    if (Mathf.Abs(spawnPos.x) < Camera.main.orthographicSize * screenPercent)
-                    {
-                        spawnProbSub += lessBlockMidPercent;
-                    }
-                    if (Mathf.PerlinNoise(spawnPos.x / 10f + m_seed, spawnPos.y / 10f + m_seed) >= 0.7f + spawnProbSub)
+                    if (Mathf.PerlinNoise(spawnPos.x / 10f + m_seed, spawnPos.y / 10f + m_seed) >= 0.7f)
                     {
                         GenerateWall(spawnPos);
                     }
@@ -81,13 +76,15 @@ public class S_MapManager : MonoBehaviour
     private void GenerateWall(Vector3Int spawnPos)
     {
 
-        if (80f < Mathf.PerlinNoise(spawnPos.x / 10f + m_seed, spawnPos.y / 10f + m_seed))                                                // 50% Chance to spawn with "Breackable" Tag
+        if (Mathf.PerlinNoise(spawnPos.x / 10f + m_seed, spawnPos.y / 10f + m_seed) >= 0.80f)
         {
             GameObject block = Instantiate(m_wall, spawnPos, Quaternion.identity, transform);
         }
         else
         {
             GameObject block = Instantiate(m_wall, spawnPos, Quaternion.identity, transform);
+            block.GetComponent<S_Ground>().m_isDestructable = true;
+            block.GetComponent<SpriteRenderer>().sprite = m_algea;
         }
     }
 

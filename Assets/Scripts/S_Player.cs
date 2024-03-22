@@ -1,5 +1,6 @@
 using UnityEngine.InputSystem;
 using UnityEngine;
+using TMPro;
 
 public class S_Player : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class S_Player : MonoBehaviour
 
     [SerializeField]
     private GameObject m_oxygenBar;
+
+    [SerializeField]
+    private TextMeshProUGUI m_ammoText;
+    public TextMeshProUGUI m_scoreText;
 
     [SerializeField]
     private GameObject m_bulletPrefab;
@@ -39,6 +44,7 @@ public class S_Player : MonoBehaviour
     public int m_NbShoot;
 
     public float m_oxygen = 100f;
+    public int m_score = 0;
 
     private void Awake()
     {
@@ -53,7 +59,7 @@ public class S_Player : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (m_rigidBody.velocity.y <= -20f)
+        if (m_rigidBody.velocity.y <= -15f)
         {
             m_rigidBody.velocity = new Vector2(m_rigidBody.velocity.x, -20f);
         }
@@ -91,6 +97,7 @@ public class S_Player : MonoBehaviour
                 }
                 m_rigidBody.velocity += Vector2.up * 0.25f;
                 m_NbShoot--;
+                S_Player.instance.AmmoUpdate();
                 GameObject bullet = Instantiate(m_bulletPrefab, m_bulletSpawner.position, m_bulletSpawner.rotation, m_bulletHolderTransform);
                 bullet.GetComponent<Rigidbody2D>().velocity = Vector2.down * 10;
                 m_shootCooldown = 0.25f;
@@ -107,7 +114,7 @@ public class S_Player : MonoBehaviour
         
     }
 
-    public void Drowning()
+    private void Drowning()
     {
         float value = 5 * Time.deltaTime;
         m_oxygen -= value;
@@ -118,6 +125,11 @@ public class S_Player : MonoBehaviour
         RectTransform rt = m_oxygenBar.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(rt.rect.width, m_oxygen*5);
         m_oxygenBar.transform.localPosition = new Vector2( 760, (m_oxygen - 100) * 2.5f);
+    }
+
+    public void AmmoUpdate()
+    {
+        m_ammoText.text = "Ammo : " + S_Player.instance.m_NbShoot.ToString();
     }
 
     public void JumpOrShoot(InputAction.CallbackContext context)

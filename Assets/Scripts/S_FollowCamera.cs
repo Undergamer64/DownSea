@@ -14,6 +14,6 @@ public class S_FollowCamera : MonoBehaviour
 
     private void FixedUpdate()
     {
-        transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y, m_player.transform.position.y, Time.deltaTime * m_speed), transform.position.z);
+        transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y, m_player.transform.position.y - 2, Time.deltaTime * m_speed), transform.position.z);
     }
 }
